@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect  } from 'react'
 import axios from "axios";
 import logo from './logo.svg';
 import './App.css';
@@ -11,32 +11,31 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { amber, deepOrange, grey } from '@mui/material/colors';
+
 
 function App() {
-
-   // new line start
-  const [profileData, setProfileData] = useState(null)
-  const [inputName, setInputName] = useState('');
-  const [foundNames, setFoundNames] = useState(null);
-  const [filterMode, setFilterMode] = useState(null);
-  
-  function getData() {
-    axios({
-      method: "GET",
-      url:"/profile",
-    })
-    .then((response) => {
-      const res =response.data
-	  setFoundNames(Object.keys(res))
-      setProfileData(res)
-	  doFilter(inputName, filterMode, res)
-    }).catch((error) => {
-      if (error.response) {
-        console.log(error.response)
-        console.log(error.response.status)
-        console.log(error.response.headers)
-        }
-    })}
+	function getData() {
+		axios({
+		method: "GET",
+		url:"/profile",
+		})
+		.then((response) => {
+		const res =response.data
+		setFoundNames(Object.keys(res))
+		setProfileData(res)
+		doFilter(inputName, filterMode, res)
+		}).catch((error) => {
+		if (error.response) {
+			console.log(error.response)
+			console.log(error.response.status)
+			console.log(error.response.headers)
+			}
+		}
+	)}
 	
 	function process(inputName, inputValue) {
 		axios({
@@ -51,6 +50,34 @@ function App() {
 		})
 	}
 	
+	const [profileData, setProfileData] = useState(null)
+	const [inputName, setInputName] = useState('');
+	const [foundNames, setFoundNames] = useState(null);
+	const [filterMode, setFilterMode] = useState(null);
+	const [rows, setRows] = useState(null);
+	
+	const darkTheme = createTheme({
+		palette: {
+			mode: 'dark',
+			primary: {
+				main: deepOrange[900] /*or whatever color you desire */
+			}
+		},
+	});
+  
+	const columns = [
+		{ field: 'name', headerName: 'Name', width: 150 },
+		{
+			field: "processed",
+			headerName: "Actions",
+			width: 300,
+			renderCell: (params) => (
+				getButtons(params.row.name)
+			),
+			selectable: false,
+		},
+	];
+	
 	const filterGroup = (event, newMode) => {
 		setFilterMode(newMode);
 		doFilter(inputName, newMode, profileData);
@@ -62,8 +89,10 @@ function App() {
 	};
 	
 	function doFilter(keyword, mode, data) {
+		
+		var results = []
 		if (keyword !== '') {
-			const results = Object.keys(data).filter((name) => {
+			results = Object.keys(data).filter((name) => {
 				if (mode === "processed" && data[name] === "FALSE") {
 					return false;
 				} else if (mode === "unprocessed" && data[name] === "TRUE") {
@@ -72,10 +101,9 @@ function App() {
 					return name.toLowerCase().startsWith(keyword.toLowerCase());
 				}
 			});
-			
-			setFoundNames(results);
+
 		} else {
-			const results = Object.keys(data).filter((name) => {
+			results = Object.keys(data).filter((name) => {
 				if (mode === "processed" && data[name] === "FALSE") {
 					return false;
 				} else if (mode === "unprocessed" && data[name] === "TRUE") {
@@ -84,10 +112,9 @@ function App() {
 					return true;
 				}
 			});
-			
-			setFoundNames(results);
-		// If the text field is empty, show all users
 		}
+		setRows(results.map(name => ({id : results.indexOf(name), name, processed : data[name]})));
+		setFoundNames(results);
 		setInputName(keyword);
 	}
 	
@@ -120,61 +147,62 @@ function App() {
 			return <span className="list-button"> <Button variant="contained" onClick={() => process(inputName, true)}>Process</Button> </span>
 		}
 	}
+	
+	useEffect(() => {
+		 getData();
+	});
+	
+	const [selectionModel, setSelectionModel] = useState([]);
 
-  return (
-    <div className="App">
-      <header className="App-header">
-
-        {/* new line start*/}
-        <Button variant="contained" onClick={getData}>Click me</Button>
-        {profileData && <div>
-				<div className="filterField">
-					<TextField 
-					type="search"
-					value={inputName}
-					className="input"
-					placeholder="Filter"
-					onChange={filter}
-					sx={{ input: { color: 'white' } }}
-					/>
+	return (
+	<ThemeProvider theme={darkTheme}>
+	<CssBaseline />
+	<div className="App">
+		<header className="App-header">
+			<img className="logo" src={"WebDevLogo.png"} alt="My logo" />
+		</header>
+		<main>
+		{profileData && <div>
+			<div className="filterField">
+				<TextField 
+				type="search"
+				value={inputName}
+				className="input"
+				placeholder="Filter"
+				onChange={filter}
+				/>
 					
-					<ToggleButtonGroup
-					color="primary"
-					value={filterMode}
-					exclusive
-					onChange={filterGroup}
-					aria-label="Platform"
-					>
-						<ToggleButton value="processed">Processed</ToggleButton>
-						<ToggleButton value="unprocessed">Unprocessed</ToggleButton>
-					</ToggleButtonGroup>
-				</div>
-				
-				<div className="list">
-				<List sx={{ width: '100%'}}>{
-					foundNames.sort((name1, name2) => {
-						if (profileData[name1] == "FALSE") {
-							return 1
-						} else if (profileData[name2] == "FALSE") {
-							return -1
-						} else {
-							return 1
-						}
-					}).map(name => {
-						return (
-						<ListItem disablePadding>   
-							<ListItemText primary={name}/>
-							{getButtons(name)}
-						</ListItem>
-					);
-				})
-			  }</List>
-			  </div>
-            </div>
-        }
-        {/* end of new line */}
-      </header>
+				<ToggleButtonGroup
+				value={filterMode}
+				exclusive
+				onChange={filterGroup}
+				aria-label="Platform">
+					<ToggleButton value="processed">Processed</ToggleButton>
+					<ToggleButton value="unprocessed">Unprocessed</ToggleButton>
+				</ToggleButtonGroup>
+			</div>
+			
+			<div className="list">
+				<DataGrid
+				rows={rows}
+				columns={columns}
+				initialState={{
+					sorting: {
+					  sortModel: [{ field: 'processed', sort: 'desc' }],
+					},
+				}}
+				onSelectionModelChange={(newSelectionModel) => {
+					setSelectionModel(newSelectionModel);
+				}}
+				selectionModel={selectionModel}
+				disableSelectionOnClick
+				checkboxSelection
+				/>
+			</div>
+		</div>}
+		</main>
     </div>
+	</ThemeProvider>
   );
 }
 
