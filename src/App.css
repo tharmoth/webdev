@@ -16,7 +16,7 @@
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
-  display: flex;
+  display: auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -26,6 +26,36 @@
 
 .App-link {
   color: #61dafb;
+}
+
+.list {
+	margin: auto;
+	width: 60%;
+	max-width: 500px;
+	border: 3px solid green;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+.list-item {
+  list-style: none;
+  margin: 10px 0;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  border: 3px solid green;
+}
+
+.list-name {
+	margin-right: flex;
+}
+
+.user-button {
+	margin-right: 20px;
+}
+
+.filterField {
+	padding: 10px;
 }
 
 @keyframes App-logo-spin {
