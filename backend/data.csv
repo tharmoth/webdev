@@ -13,10 +13,10 @@ porshe,FALSE
 corvette,TRUE
 ford,FALSE
 chevrolet,FALSE
-fiat,FALSE
+fiat,TRUE
 mazda,TRUE
 honda,FALSE
-civic,TRUE
+civic,FALSE
 accord,FALSE
 mitsubishi,TRUE
 nisaan,FALSE

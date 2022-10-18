@@ -15,6 +15,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { amber, deepOrange, grey } from '@mui/material/colors';
+import EnhancedTable from './EnhancedTable.js'
 
 
 function App() {
@@ -113,6 +114,7 @@ function App() {
 				}
 			});
 		}
+		
 		setRows(results.map(name => ({id : results.indexOf(name), name, processed : data[name]})));
 		setFoundNames(results);
 		setInputName(keyword);
